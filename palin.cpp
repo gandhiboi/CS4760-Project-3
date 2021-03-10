@@ -28,27 +28,27 @@ typedef struct {
 	char mtext[2048];
 }Message;
 
-typedef struct {
+struct SharedMemory {
 	char strings[MAX_STRINGS][STRING_LENGTH];
 	pid_t pid;
-}SharedMemory;
+};
 
 Message* msg;
-SharedMemory* shmem = NULL;
+struct SharedMemory* shmem = NULL;
 
 int main(int argc, char* argv[]) {
 
 	allocateSharedMemory();
 	//allocateMessageQueue();
-
-	//for(int i = 0; i < MAX_STRINGS; i++) {
-		cout << "palin.cpp: strings: " << shmem->strings[0] << endl;
-	//}
+	
+	cout << "palin.cpp: shmKey: " << shmKey << endl;
+	cout << "sizeof SharedMemory Struct: " << sizeof(struct SharedMemory) << endl;
+	cout << "palin: pid: " << shmem->pid << endl;
+	cout << "palin: shmID: " << shmID << endl;
+	
 
         return EXIT_SUCCESS;
 }
-
-
 
 void allocateSharedMemory() {
 
@@ -57,15 +57,17 @@ void allocateSharedMemory() {
 		exit(EXIT_FAILURE);
 	}
 
-	if((shmID = shmget(shmKey, sizeof(SharedMemory), IPC_CREAT | S_IRUSR | S_IWUSR)) < 0) {
+	if((shmID = shmget(shmKey, sizeof(struct SharedMemory), IPC_CREAT | S_IRUSR | S_IWUSR)) < 0) {
 		perror("coordinator.cpp: error: failed to allocate shared memory");
 		exit(EXIT_FAILURE);
 	}
 	else {
-		shmem = (SharedMemory*)shmat(shmID, NULL, 0);
+		shmem = (struct SharedMemory*)shmat(shmID, NULL, 0);
 	}
+	
 
 }
+
 
 
 void allocateMessageQueue() {

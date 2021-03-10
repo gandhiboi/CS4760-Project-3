@@ -36,13 +36,13 @@ typedef struct {
 	char mtext[2048];
 }Message;
 
-typedef struct {
+struct SharedMemory {
 	char strings[MAX_STRINGS][STRING_LENGTH];
 	pid_t pid;
-}SharedMemory;
+};
 
-Message* msg = NULL;
-SharedMemory* shmem = NULL;
+Message* msg;
+struct SharedMemory* shmem = NULL;
 
 int main(int argc, char* argv[]) {
 
@@ -82,17 +82,22 @@ int main(int argc, char* argv[]) {
         }
 
 	allocateSharedMemory();
-	shmem->pid = getpid();
-
-	//cout << "strings: " << shmem->strings[sCounter] << endl;
-
+	shmem->pid = 414;
+	//cout << "outside" << endl;
 	readStrings(dataFile);
-	releaseSharedMemory();
-	allocateMessageQueue();
-	
 	spawn();
 	
-	deallocateMessageQueue();
+	
+	cout << "coordinator.cpp: shmKey: " << shmKey << endl;
+	cout << "sizeof SharedMemory Struct: " << sizeof(struct SharedMemory) << endl;
+	cout << "coord: pid: " << shmem->pid << endl;
+	cout << "coord: shmID: " << shmID << endl;
+	
+	sleep(2);
+	
+	releaseSharedMemory();
+	//allocateMessageQueue();
+	//deallocateMessageQueue();
 
         return EXIT_SUCCESS;
 }
@@ -160,14 +165,14 @@ void allocateSharedMemory() {
 		perror("coordinator.cpp: error: shmKey ftok failed");
 		exit(EXIT_FAILURE);
 	}
-
-	if((shmID = shmget(shmKey, sizeof(SharedMemory), IPC_CREAT | S_IRUSR | S_IWUSR)) < 0) {
-		perror("coordinator.cpp: error: failed to allocate shared memory");
-		exit(EXIT_FAILURE);
-	}
-	else {
-		shmem = (SharedMemory*)shmat(shmID, NULL, 0);
-	}
+	
+	if((shmID = shmget(shmKey, sizeof(struct SharedMemory), IPC_CREAT | S_IRUSR | S_IWUSR)) < 0) {
+                perror("coordinator.cpp: error: failed to allocate shared memory");
+                exit(EXIT_FAILURE);
+        }
+        else {
+                shmem = (struct SharedMemory*)shmat(shmID, NULL, 0);
+        }
 
 }
 
@@ -211,7 +216,7 @@ void deallocateMessageQueue() {
 			exit(EXIT_FAILURE);
 		}
 	}
-	
+
 }
 
 
