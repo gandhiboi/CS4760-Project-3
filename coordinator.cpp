@@ -32,48 +32,48 @@ static int msgQID;
 static int shmID;
 
 typedef struct {
-	long mtype;
-	char mtext[2048];
+        long mtype;
+        char mtext[100];
 }Message;
 
 struct SharedMemory {
-	char strings[MAX_STRINGS][STRING_LENGTH];
-	pid_t pid;
+        char strings[MAX_STRINGS][STRING_LENGTH];
+        pid_t pid;
 };
 
-Message* msg;
+Message* msg = NULL;
 struct SharedMemory* shmem = NULL;
 
 int main(int argc, char* argv[]) {
 
-	int opt;
-	int c = 5;
-	int m = 20;
+        int opt;
+        int c = 5;
+        int m = 20;
 
-	char * dataFile = NULL;
+        char * dataFile = NULL;
 
-	while((opt = getopt(argc, argv, "hc:m:")) != -1) {
-		switch(opt) {
-			case 'h':
-				usage();
-				exit(EXIT_SUCCESS);
-			case 'c':
-				if(!isdigit(*optarg) || (c = atoi(optarg)) < 0) {
-					perror("coordinator.cpp: error: invalid number of total proceses");
-					exit(EXIT_FAILURE);
-				}
-				break;
+        while((opt = getopt(argc, argv, "hc:m:")) != -1) {
+                switch(opt) {
+                        case 'h':
+                                usage();
+                                exit(EXIT_SUCCESS);
+                        case 'c':
+                                if(!isdigit(*optarg) || (c = atoi(optarg)) < 0) {
+                                        perror("coordinator.cpp: error: invalid number of total proceses");
+                                        exit(EXIT_FAILURE);
+                                }
+                                break;
 
-			case 'm':
-				if(!isdigit(*optarg) || (m = atoi(optarg)) < 0 || (m = atoi(optarg)) > 20) {
-					perror("coordinator.cpp: error: invalid number of processes");
-					exit(EXIT_FAILURE);
-				}
-				break;
-		}
-	}
+                        case 'm':
+                                if(!isdigit(*optarg) || (m = atoi(optarg)) < 0 || (m = atoi(optarg)) > 20) {
+                                        perror("coordinator.cpp: error: invalid number of processes");
+                                        exit(EXIT_FAILURE);
+                                }
+                                break;
+                }
+        }
 
-	if(argv[optind] == NULL) {
+        if(argv[optind] == NULL) {
                 perror("coordinator.cpp: error: no input file");
                 exit(EXIT_FAILURE);
         }
@@ -81,92 +81,86 @@ int main(int argc, char* argv[]) {
                 dataFile = argv[optind];
         }
 
-	allocateSharedMemory();
-	shmem->pid = 414;
-	//cout << "outside" << endl;
-	readStrings(dataFile);
-	spawn();
-	
-	
-	cout << "coordinator.cpp: shmKey: " << shmKey << endl;
-	cout << "sizeof SharedMemory Struct: " << sizeof(struct SharedMemory) << endl;
-	cout << "coord: pid: " << shmem->pid << endl;
-	cout << "coord: shmID: " << shmID << endl;
-	
+        allocateSharedMemory();
+        allocateMessageQueue();
+        shmem->pid = 414;
+        
+        cout << "coord: msgQID: " << msgQID << endl;
+        
+        readStrings(dataFile);
+        spawn();
+
 	sleep(2);
-	
-	releaseSharedMemory();
-	//allocateMessageQueue();
-	//deallocateMessageQueue();
+
+        releaseSharedMemory();
+        deallocateMessageQueue();
 
         return EXIT_SUCCESS;
 }
 
 void usage() {
-	printf("======================================================================\n");
-	printf("\t\t\t\tUSAGE\n");
-	printf("======================================================================\n");
-	printf("coordinator -h [-c i] [-m j] dataFile\n");
-	printf("run as: ./coordinator [options] dataFile\n");
-	printf("======================================================================\n");
-	printf("-h		:	Describe hwo to project should be run and then terminate.\n");
-	printf("-c i		:	Indicate how many child processes, i, should be launched in total.\n");
-	printf("-m j		:	Indicate the maximum number of children, j, allowed to exist in the system at the same time (Default 20)\n");
-	printf("dataFile	:	Input file containing one string on each line\n");
+        printf("======================================================================\n");
+        printf("\t\t\t\tUSAGE\n");
+        printf("======================================================================\n");
+        printf("coordinator -h [-c i] [-m j] dataFile\n");
+        printf("run as: ./coordinator [options] dataFile\n");
+        printf("======================================================================\n");
+        printf("-h              :       Describe hwo to project should be run and then terminate.\n");
+        printf("-c i            :       Indicate how many child processes, i, should be launched in total.\n");
+        printf("-m j            :       Indicate the maximum number of children, j, allowed to exist in the system at the same time (Default 20)\n");
+        printf("dataFile        :       Input file containing one string on each line\n");
 }
 
 void spawn() {
 
-	pid_t cpid = fork();
-	
-	if(cpid == -1) {
-		perror("coordinator.cpp: error: fork operation failed");
-		exit(EXIT_FAILURE);
-	}
-	
-	if(cpid == 0) {
-	
-		execl("./palin", "palin", (char*)NULL);
-		exit(EXIT_SUCCESS);
-	
-	}
+        pid_t cpid = fork();
+
+        if(cpid == -1) {
+                perror("coordinator.cpp: error: fork operation failed");
+                exit(EXIT_FAILURE);
+        }
+
+        if(cpid == 0) {
+                execl("./palin", "palin", (char*)NULL);
+                exit(EXIT_SUCCESS);
+        }
 
 }
 
 void readStrings(char * inputFile) {
 
-	FILE * fp = fopen(inputFile, "r");
+        FILE * fp = fopen(inputFile, "r");
 
-	char *readLine = NULL;
-	size_t len = 0;
-	ssize_t read;
+        char *readLine = NULL;
+        size_t len = 0;
+        ssize_t read;
 
-	if(fp == NULL) {
-		perror("coordinator.cpp: error: failed to open input file");
-		exit(EXIT_FAILURE);
-	}
+        if(fp == NULL) {
+                perror("coordinator.cpp: error: failed to open input file");
+                exit(EXIT_FAILURE);
+        }
 
-	while((read = getline(&readLine, &len, fp)) != -1) {
-		readLine[strlen(readLine) - 1] = '\0';
-		strcpy(shmem->strings[sCounter], readLine);
-		//cout << "strings: " << shmem->strings[sCounter] << endl;
-		sCounter++;
-	}
+        while((read = getline(&readLine, &len, fp)) != -1) {
+                readLine[strlen(readLine) - 1] = '\0';
+                strcpy(shmem->strings[sCounter], readLine);
+                //cout << "strings: " << shmem->strings[sCounter] << endl;
+                sCounter++;
+        }
 
-	fclose(fp);
-	free(readLine);
-	readLine = NULL;
+        fclose(fp);
+        free(readLine);
+        readLine = NULL;
 
 }
 
 void allocateSharedMemory() {
 
-	if((shmKey = ftok("./makefile", 'p')) == -1) {
-		perror("coordinator.cpp: error: shmKey ftok failed");
-		exit(EXIT_FAILURE);
-	}
-	
-	if((shmID = shmget(shmKey, sizeof(struct SharedMemory), IPC_CREAT | S_IRUSR | S_IWUSR)) < 0) {
+        if((shmKey = ftok("./makefile", 'p')) == -1) {
+                perror("coordinator.cpp: error: shmKey ftok failed");
+                exit(EXIT_FAILURE);
+        }
+
+        if((shmID = shmget(shmKey, sizeof(struct SharedMemory), IPC_CREAT | S_IRUSR | S_IWUSR)) < 0) {
                 perror("coordinator.cpp: error: failed to allocate shared memory");
                 exit(EXIT_FAILURE);
         }
@@ -177,46 +171,47 @@ void allocateSharedMemory() {
 }
 
 void releaseSharedMemory() {
-	if(shmem != NULL) {
-		if(shmdt(shmem) == -1) {
-			perror("coordinator.cpp: error: failed to release shared memory");
-			exit(EXIT_FAILURE);
-		}
-	}
-	deleteSharedMemory();
+        if(shmem != NULL) {
+                if(shmdt(shmem) == -1) {
+                        perror("coordinator.cpp: error: failed to release shared memory");
+                        exit(EXIT_FAILURE);
+                }
+        }
+        deleteSharedMemory();
 }
 
 void deleteSharedMemory() {
-	if(shmID > 0) {
-		if(shmctl(shmID, IPC_RMID, NULL) < 0) {
-			perror("coordinator.cpp: error: failed to delete shared memory"); 
-			exit(EXIT_FAILURE);
-		}
-	}
+        if(shmID > 0) {
+                if(shmctl(shmID, IPC_RMID, NULL) < 0) {
+                        perror("coordinator.cpp: error: failed to delete shared memory"); 
+                        exit(EXIT_FAILURE);
+                }
+        }
 }
 
 void allocateMessageQueue() {
 
-	if((msgKey = ftok("./makefile", 's')) == -1) {
-		perror("coordinator.cpp: error: msgKey ftok failed");
-		exit(EXIT_FAILURE);
-	}
+        if((msgKey = ftok("./makefile", 's')) == -1) {
+                perror("coordinator.cpp: error: msgKey ftok failed");
+                exit(EXIT_FAILURE);
+        }
 
-	if((msgQID = msgget(msgKey, S_IRUSR | S_IWUSR | IPC_CREAT | IPC_EXCL)) == -1) {
-		perror("coordinator.cpp: error: message queue allocation failed");
-		exit(EXIT_FAILURE);
-	}
+	cout << "coord: msgKey: " << msgKey << endl;
+
+        if((msgQID = msgget(msgKey, S_IRUSR | S_IWUSR | IPC_CREAT | IPC_EXCL)) == -1) {
+                perror("coordinator.cpp: error: message queue allocation failed");
+                exit(EXIT_FAILURE);
+        }
 
 }
 
 void deallocateMessageQueue() {
-	if(msgQID > 0) {
-		if(msgctl(msgQID, IPC_RMID, NULL) == -1) {
-			perror("coordinator.cpp: error: failed to deallocate message queue");
-			exit(EXIT_FAILURE);
-		}
-	}
+        if(msgQID > 0) {
+                if(msgctl(msgQID, IPC_RMID, NULL) == -1) {
+                        perror("coordinator.cpp: error: failed to deallocate message queue");
+                        exit(EXIT_FAILURE);
+                }
+        }
 
 }
-
 
