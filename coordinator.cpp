@@ -22,7 +22,7 @@ void allocateSharedMemory();
 void deallocateMessageQueue();
 void releaseSharedMemory();
 void deleteSharedMemory();
-void spawn();
+void spawn(int);
 
 int sCounter = 0;
 
@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
         int opt;
         int c = 5;
         int m = 20;
+        int index = 3;
 
         char * dataFile = NULL;
 
@@ -88,14 +89,19 @@ int main(int argc, char* argv[]) {
         cout << "coord: msgQID: " << msgQID << endl;
         
         readStrings(dataFile);
-        spawn();
+        spawn(index);
+        
+        //i <= sCounter for spawning children
+        //if i < m(total max processes at one time)
         
 	msgrcv(msgQID, &msg, sizeof(Message), 0, 0);
 	printf("recvd: %s\n", msg.mtext);
 
 
+
 	sleep(2);
 
+	cout << "sCounter: " << sCounter << endl;
 
         //releaseSharedMemory();
         deleteSharedMemory();
@@ -117,7 +123,7 @@ void usage() {
         printf("dataFile        :       Input file containing one string on each line\n");
 }
 
-void spawn() {
+void spawn(int indices) {
 
         pid_t cpid = fork();
 
@@ -127,8 +133,17 @@ void spawn() {
         }
 
         if(cpid == 0) {
-                execl("./palin", "palin", (char*)NULL);
-                exit(EXIT_SUCCESS);
+        
+		int length = snprintf(NULL, 0, "%d", indices);
+		char* xx = (char*)malloc(length + 1);
+		snprintf(xx, length + 1, "%d", indices);
+        
+		execl("./palin", xx, (char*)NULL);
+		
+		free(xx);
+		xx = NULL;
+		
+		exit(EXIT_SUCCESS);
         }
 
 }

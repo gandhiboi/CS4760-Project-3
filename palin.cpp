@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,9 +47,38 @@ int main(int argc, char* argv[]) {
 	cout << "palin: msgQID: " << msgQID << endl;
 	cout << "palin: pid: " << shmem->pid << endl;
 
+	int index = atoi(argv[0]);
 
 	msg.mtype = 1;
 	cout << "palin: mtype: " << msg.mtype << endl;
+	
+	cout << "string: shmem index: " << shmem->strings[index] << endl;
+	
+	char * testString = shmem->strings[index];
+	
+	int size = strlen(testString);
+	
+	bool flag = true;
+	
+	for(int i = 0; i < size; i++) {
+		if(tolower(testString[i]) != tolower(testString[size - i - 1])) {
+			flag = false;
+			break;
+		}
+		//testString[i] = tolower(testString[i]);
+	} 
+	
+	if(flag == true) {
+		printf("%s is a palindrome\n", testString);
+		strcpy(msg.mtext, "palin: is a palin");
+		msgsnd(msgQID, &msg, sizeof(Message), 0);
+	}
+	else {
+		printf("%s is not a palindrome\n", testString);
+		strcpy(msg.mtext, "palin: not a palin");
+		msgsnd(msgQID, &msg, sizeof(Message), 0);
+	}
+	//cout << "testString lower: " << testString << endl;
 	
 	strcpy(msg.mtext, "palin: not a palin");
 	msgsnd(msgQID, &msg, sizeof(Message), 0);
