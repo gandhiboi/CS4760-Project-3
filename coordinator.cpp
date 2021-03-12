@@ -41,7 +41,7 @@ struct SharedMemory {
         pid_t pid;
 };
 
-Message* msg = NULL;
+Message msg;
 struct SharedMemory* shmem = NULL;
 
 int main(int argc, char* argv[]) {
@@ -89,10 +89,16 @@ int main(int argc, char* argv[]) {
         
         readStrings(dataFile);
         spawn();
+        
+	msgrcv(msgQID, &msg, sizeof(Message), 0, 0);
+	printf("recvd: %s\n", msg.mtext);
+
 
 	sleep(2);
 
-        releaseSharedMemory();
+
+        //releaseSharedMemory();
+        deleteSharedMemory();
         deallocateMessageQueue();
 
         return EXIT_SUCCESS;
@@ -143,7 +149,7 @@ void readStrings(char * inputFile) {
         while((read = getline(&readLine, &len, fp)) != -1) {
                 readLine[strlen(readLine) - 1] = '\0';
                 strcpy(shmem->strings[sCounter], readLine);
-                //cout << "strings: " << shmem->strings[sCounter] << endl;
+                //cout << "coord: strings: " << shmem->strings[sCounter] << endl;
                 sCounter++;
         }
 
@@ -171,13 +177,13 @@ void allocateSharedMemory() {
 }
 
 void releaseSharedMemory() {
-        if(shmem != NULL) {
-                if(shmdt(shmem) == -1) {
-                        perror("coordinator.cpp: error: failed to release shared memory");
-                        exit(EXIT_FAILURE);
-                }
+	if(shmem != NULL) {
+		if(shmdt(shmem) == -1) {        	
+			perror("coordinator.cpp: error: failed to release shared memory");
+			exit(EXIT_FAILURE);
+		}
         }
-        deleteSharedMemory();
+	deleteSharedMemory();
 }
 
 void deleteSharedMemory() {
@@ -195,8 +201,6 @@ void allocateMessageQueue() {
                 perror("coordinator.cpp: error: msgKey ftok failed");
                 exit(EXIT_FAILURE);
         }
-
-	cout << "coord: msgKey: " << msgKey << endl;
 
         if((msgQID = msgget(msgKey, S_IRUSR | S_IWUSR | IPC_CREAT | IPC_EXCL)) == -1) {
                 perror("coordinator.cpp: error: message queue allocation failed");

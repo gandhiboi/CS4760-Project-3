@@ -9,6 +9,8 @@
 #include <sys/types.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
+#include <signal.h>
+#include <wait.h>
 
 using namespace std;
 
@@ -33,7 +35,7 @@ struct SharedMemory {
         pid_t pid;
 };
 
-Message* msg = NULL;
+Message msg;
 struct SharedMemory* shmem = NULL;
 
 int main(int argc, char* argv[]) {
@@ -41,17 +43,20 @@ int main(int argc, char* argv[]) {
 	allocateSharedMemory();
 	allocateMessageQueue();
 
-
 	cout << "palin: msgQID: " << msgQID << endl;
-	cout << "palin.cpp: shmKey: " << shmKey << endl;
 	cout << "palin: pid: " << shmem->pid << endl;
-	cout << "palin: shmID: " << shmID << endl;
 
-        return EXIT_SUCCESS;
+
+	msg.mtype = 1;
+	cout << "palin: mtype: " << msg.mtype << endl;
+	
+	strcpy(msg.mtext, "palin: not a palin");
+	msgsnd(msgQID, &msg, sizeof(Message), 0);
+
+	return EXIT_SUCCESS;
 }
 
 void allocateSharedMemory() {
-
 	if((shmKey = ftok("./makefile", 'p')) == -1) {
 		perror("coordinator.cpp: error: shmKey ftok failed");
 		exit(EXIT_FAILURE);
@@ -71,8 +76,6 @@ void allocateMessageQueue() {
                 perror("palin.cpp: error: msgKey ftok failed");
                 exit(EXIT_FAILURE);
         }
-        
-        cout << "palin: msgKey: " << msgKey << endl;
 
 	if((msgQID = msgget(msgKey, S_IRUSR | S_IWUSR | IPC_CREAT)) == -1) {
         	cout << "palin: msgQID: " << msgQID << endl;
