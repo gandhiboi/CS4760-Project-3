@@ -27,6 +27,9 @@ ISSUES
 - signal handler is funky; sometimes it detaches/deletes shared memory and message queue,
   other times it does not; couldn't figure out a real solution; since it worked fine on
   my last project
+- issues with detaching from shared memory; results in a return value of -1; could not
+  for the life of me figure it out; so I commented out releaseSharedMemory(), but 
+  deleteSharedMemory() cleans it all up (probably not correct but it did the trick)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -34,7 +37,8 @@ NOTE
 
 - "technically" everything is done according to specifications, but not as clean as I
   would have liked it to be; for example, I had to use globally stored strings and pids
-  to be able to output to palin.out and nopalin.out
+  to be able to output to palin.out and nopalin.out; and commented out function for 
+  releasing shared memory, but delete it without releasing (still works)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -55,6 +59,8 @@ VERSION CONTROL
 - repository is set to private; will make public 03/15/2021
 - forgot to commit/push a day of working, since I was workin on Ubunutu VM this time
   rather than hoare itself
+
+- https://github.com/gandhiboi/CS4760-Project-3
 
 Commits on Mar 15, 2021
 added so that .out files would be deleted; final commit
