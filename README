@@ -24,9 +24,17 @@ ISSUES
   strings globally also so that I could output to the file
 - similar issue to the child PIDs; I stored those globally rather than shared memory
   so I could write to the file
+- signal handler is funky; sometimes it detaches/deletes shared memory and message queue,
+  other times it does not; couldn't figure out a real solution; since it worked fine on
+  my last project
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+NOTE
 
 - "technically" everything is done according to specifications, but not as clean as I
-  would have liked it to be
+  would have liked it to be; for example, I had to use globally stored strings and pids
+  to be able to output to palin.out and nopalin.out
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
