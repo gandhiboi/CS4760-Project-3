@@ -1,7 +1,92 @@
 # Project 3 - Message Queues and Palindromes
 # Kenan Krijestorac
 # 2 March 2021
+# Completed 15 March 2021 @ 9:10pm
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+SOURCES
 
+- https://www.geeksforgeeks.org/signals-c-language/
+- https://www.geeksforgeeks.org/ipc-using-message-queues/
+- https://www.geeksforgeeks.org/c-program-check-given-string-palindrome/
+- https://man7.org/linux/man-pages//man2/msgget.2.html
+- https://www.geeksforgeeks.org/wait-system-call-c/
+- lots of stackoverflow for errors
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ISSUES
+
+- had issues with accessing shared memory; although strings from file are stored
+  and accessed through shared memory, i was not able to access shared memory
+  in coordinator.cpp when I was trying to write to file; as a result I stored the
+  strings globally also so that I could output to the file
+- similar issue to the child PIDs; I stored those globally rather than shared memory
+  so I could write to the file
+
+- "technically" everything is done according to specifications, but not as clean as I
+  would have liked it to be
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+HOW TO RUN
+
+1. Type 'make' in the terminal
+2. Run as './coordinator' followed by the options and file name; if no optinos are specified
+   [-m] is set to default 20 and [-c] is set to m as default
+
+   e.g.   ./coodinator -c 30 -m 5 dataFile  	or 	./coordinator dataFile
+
+3. Type 'make clean' to remove executables, object files, and log files
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+VERSION CONTROL
+
+- repository is set to private; will make public 03/15/2021
+- forgot to commit/push a day of working, since I was workin on Ubunutu VM this time
+  rather than hoare itself
+
+Commits on Mar 15, 2021
+added so that .out files would be deleted; final commit
+
+@gandhiboi
+gandhiboi committed 13 minutes ago
+ 
+after a long day; implemented forking logic, signal handler, timer, comments, output files
+@gandhiboi
+gandhiboi committed 16 minutes ago
+ 
+Commits on Mar 12, 2021
+implemented palindrome checker and comms b/w master and child
+
+@gandhiboi
+gandhiboi committed 4 days ago
+ 
+Commits on Mar 11, 2021
+message queue between master and child working
+
+@gandhiboi
+gandhiboi committed 4 days ago
+ 
+finally fixed message queue; still need to test send/receive messages
+
+@gandhiboi
+gandhiboi committed 5 days ago
+ 
+Commits on Mar 10, 2021
+fixed reading shared memory in child
+
+@gandhiboi
+gandhiboi committed 5 days ago
+ 
+keep forgetting to push; getopt working; stored strings in shmem; diff shmid in child
+@gandhiboi
+gandhiboi committed 5 days ago
+ 
+Commits on Mar 2, 2021
+initial commit
+
+@gandhiboi
+gandhiboi committed 14 days ago
