@@ -13,4 +13,4 @@ palin: palin.o
 	$(CC) $(CFLAG) $< -o $@
 
 clean:
-	rm -f *.o coordinator palin
+	rm -f *.o *.out coordinator palin
